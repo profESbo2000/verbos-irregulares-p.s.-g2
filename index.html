@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grupo 2: Cambio Vocálico (O -> UE)</title>
+  <style>
+    :root {
+      --table-bg: #2d4030;
+      --card-bg: #fdfbf7;
+      --text-main: #1f2937;
+      --yellow-piece: #facc15;
+      --yellow-border: #eab308;
+      --green-piece: #22c55e;
+      --green-border: #15803d;
+      --special-piece: #ef4444;
+      --special-border: #b91c1c;
+      --pronoun-color: #d9381e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--table-bg);
+      min-height: 100vh;
+      padding: 20px;
+      color: var(--text-main);
+    }
+
+    h1 {
+      text-align: center;
+      color: #ffffff;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #dad7cd;
+      margin-bottom: 25px;
+      font-size: 1.05rem;
+    }
+
+    /* ESTRUCTURA PRINCIPAL (CONJUGACIÓN A LA IZQUIERDA, MESA A LA DERECHA) */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* ÁREA DE TRABAJO (CONJUGADOR) */
+    .workspace {
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .verb-header {
+      text-align: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .selected-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+
+    .stem-info {
+      font-size: 0.95rem;
+      color: #4b5563;
+      margin-top: 4px;
+    }
+
+    .note-badge {
+      display: inline-block;
+      margin-top: 6px;
+      background-color: #fef08a;
+      color: #854d0e;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid #fde047;
+    }
+
+    .note-badge.special {
+      background-color: #fecaca;
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+
+    /* GRID DE FILAS DE CONJUGACIÓN */
+    .conjugation-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 140px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      background-color: #ffffff;
+      padding: 8px 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .pronoun {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--pronoun-color);
+    }
+
+    /* PUZZLE SVG */
+    .puzzle-box {
+      cursor: pointer;
+    }
+
+    .puzzle-svg {
+      display: block;
+      overflow: visible;
+      filter: drop-shadow(0px 3px 4px rgba(0, 0, 0, 0.12));
+    }
+
+    .text-stem {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-weight: 900;
+      font-size: 18px;
+      dominant-baseline: central;
+      text-anchor: middle;
+    }
+
+    .text-ending {
+      fill: #ffffff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-weight: 900;
+      font-size: 18px;
+      dominant-baseline: central;
+      text-anchor: middle;
+      transition: opacity 0.25s ease;
+    }
+
+    .text-hidden {
+      opacity: 0;
+    }
+
+    /* BOTÓN DE AUDIO */
+    .audio-btn {
+      background: #f3f4f6;
+      border: 2px solid #e5e7eb;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+
+    .audio-btn:hover {
+      background-color: var(--yellow-piece);
+      border-color: var(--yellow-border);
+      transform: scale(1.1);
+    }
+
+    /* MESA DE VERBOS (DERECHA) */
+    .desk-area {
+      background-color: #a3b18a;
+      border: 4px solid #588157;
+      border-radius: 20px;
+      padding: 20px;
+      min-height: 550px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-content: flex-start;
+      justify-content: center;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    .card-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .card-container {
+      width: 110px;
+      height: 110px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+      border-radius: 12px;
+    }
+
+    .card-container.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-container.active .card-front,
+    .card-container.active .card-back {
+      border: 3px solid #ff5252;
+      box-shadow: 0 0 12px rgba(255, 82, 82, 0.8);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      user-select: none;
+    }
+
+    .card-front {
+      background-color: #ffffff;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 0.95rem;
+      border: 2px solid #cbd5e1;
+    }
+
+    /* ESTILO ESPECIAL PARA JUGAR Y OLER */
+    .card-container.is-special .card-front {
+      border: 2px solid #ef4444;
+      color: #b91c1c;
+      background-color: #fff5f5;
+    }
+
+    .card-container.is-special .card-front::after {
+      content: "★ Especial";
+      font-size: 0.65rem;
+      color: #ef4444;
+      margin-top: 2px;
+      font-weight: 700;
+    }
+
+    .card-back {
+      background-color: #f1f5f9;
+      color: var(--text-main);
+      transform: rotateY(180deg);
+      border: 2px solid #cbd5e1;
+    }
+
+    .card-back-icon {
+      font-size: 1.8rem;
+      margin-bottom: 2px;
+    }
+
+    .card-back-text {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+    }
+
+    .select-btn {
+      background-color: #ff793f;
+      color: #ffffff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .select-btn:hover {
+      background-color: #ff5252;
+    }
+
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 1fr; }
+      .desk-area { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>GRUPO 2: Cambio Vocálico (O ➔ UE)</h1>
+  <div class="subtitle">La vocal <strong>O</strong> cambia por <strong>UE</strong> en la raíz (excepto Nosotros y Vosotros)</div>
+
+  <div class="main-layout">
+    
+    <!-- CONJUGACIÓN (IZQUIERDA) -->
+    <div class="workspace">
+      <div class="verb-header">
+        <div class="selected-title" id="selectedVerbTitle">PODER</div>
+        <div class="stem-info" id="selectedVerbInfo">Cambio vocálico: <strong style="color: #d97706;">O ➔ UE</strong></div>
+        <div class="note-badge" id="selectedVerbBadge">Raíz cambia en: Yo, Tú, Él/Ella, Ellos/as</div>
+      </div>
+
+      <div class="conjugation-grid" id="conjugationGrid"></div>
+    </div>
+
+    <!-- MESA DE VERBOS (DERECHA) -->
+    <div class="desk-area" id="deskArea"></div>
+
+  </div>
+
+  <script>
+    // Lista completa de verbos basada en las diapositivas
+    const verbosGrupo2 = [
+      {
+        verbo: "PODER",
+        ingles: "To be able / Can",
+        icono: "💪",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "pued", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "pued", terminacion: "-es", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "pued", terminacion: "-e", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "pod", terminacion: "-emos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "pod", terminacion: "-éis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "pued", terminacion: "-en", esCambio: true }
+        ]
+      },
+      {
+        verbo: "ALMORZAR",
+        ingles: "To have lunch",
+        icono: "🥗",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "almuerz", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "almuerz", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "almuerz", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "almorz", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "almorz", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "almuerz", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "JUGAR",
+        ingles: "To play",
+        icono: "⚽",
+        especial: true,
+        info: "⚠️ Verbo especial: Cambia U ➔ UE (en lugar de O)",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "jueg", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "jueg", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "jueg", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "jug", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "jug", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "jueg", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "OLER",
+        ingles: "To smell",
+        icono: "👃",
+        especial: true,
+        info: "⚠️ Verbo especial: Cambia O ➔ HUE (añade H ortográfica)",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "huel", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "huel", terminacion: "-es", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "huel", terminacion: "-e", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "ol", terminacion: "-emos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "ol", terminacion: "-éis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "huel", terminacion: "-en", esCambio: true }
+        ]
+      },
+      {
+        verbo: "VOLAR",
+        ingles: "To fly",
+        icono: "✈️",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "vuel", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "vuel", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "vuel", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "vol", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "vol", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "vuel", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "SOÑAR",
+        ingles: "To dream",
+        icono: "☁️",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "sueñ", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "sueñ", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "sueñ", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "soñ", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "soñ", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "sueñ", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "DORMIR",
+        ingles: "To sleep",
+        icono: "😴",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "duerm", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "duerm", terminacion: "-es", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "duerm", terminacion: "-e", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "dorm", terminacion: "-imos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "dorm", terminacion: "-ís", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "duerm", terminacion: "-en", esCambio: true }
+        ]
+      },
+      {
+        verbo: "VOLVER",
+        ingles: "To return",
+        icono: "🔄",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "vuelv", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "vuelv", terminacion: "-es", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "vuelv", terminacion: "-e", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "volv", terminacion: "-emos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "volv", terminacion: "-éis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "vuelv", terminacion: "-en", esCambio: true }
+        ]
+      },
+      {
+        verbo: "ENCONTRAR",
+        ingles: "To find",
+        icono: "🔍",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "encuentr", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "encuentr", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "encuentr", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "encontr", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "encontr", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "encuentr", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "RECORDAR",
+        ingles: "To remember",
+        icono: "💭",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "recuerd", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "recuerd", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "recuerd", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "record", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "record", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "recuerd", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "MOSTRAR",
+        ingles: "To show",
+        icono: "👉",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "muestr", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "muestr", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "muestr", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "mostr", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "mostr", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "muestr", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "PROBAR",
+        ingles: "To try / taste",
+        icono: "🍕",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "prueb", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "prueb", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "prueb", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "prob", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "prob", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "prueb", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "CONTAR",
+        ingles: "To count / tell",
+        icono: "🔢",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "cuent", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "cuent", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "cuent", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "cont", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "cont", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "cuent", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "COSTAR",
+        ingles: "To cost",
+        icono: "🏷️",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "cuest", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "cuest", terminacion: "-as", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "cuest", terminacion: "-a", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "cost", terminacion: "-amos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "cost", terminacion: "-áis", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "cuest", terminacion: "-an", esCambio: true }
+        ]
+      },
+      {
+        verbo: "MORIR",
+        ingles: "To die",
+        icono: "💀",
+        especial: false,
+        info: "Cambio vocálico regular: O ➔ UE",
+        conjugaciones: [
+          { pronombre: "Yo", raiz: "muer", terminacion: "-o", esCambio: true },
+          { pronombre: "Tú", raiz: "muer", terminacion: "-es", esCambio: true },
+          { pronombre: "Él / Ella / Usted", raiz: "muer", terminacion: "-e", esCambio: true },
+          { pronombre: "Nosotros/as", raiz: "mor", terminacion: "-imos", esCambio: false },
+          { pronombre: "Vosotros/as", raiz: "mor", terminacion: "-ís", esCambio: false },
+          { pronombre: "Ellos / Ellas / Ustedes", raiz: "muer", terminacion: "-en", esCambio: true }
+        ]
+      }
+    ];
+
+    let selectedVerb = verbosGrupo2[0];
+
+    // Renderizar las tarjetas en la mesa de la derecha
+    function renderDesk() {
+      const desk = document.getElementById('deskArea');
+      desk.innerHTML = '';
+
+      verbosGrupo2.forEach((v) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'card-wrapper';
+
+        const container = document.createElement('div');
+        container.className = 'card-container' + 
+                            (v.verbo === selectedVerb.verbo ? ' active' : '') +
+                            (v.especial ? ' is-special' : '');
+
+        container.innerHTML = `
+          <div class="card-inner">
+            <div class="card-front">
+              <span>${v.verbo}</span>
+            </div>
+            <div class="card-back">
+              <span class="card-back-icon">${v.icono}</span>
+              <span class="card-back-text">${v.ingles}</span>
+            </div>
+          </div>
+        `;
+
+        // Giro 3D
+        container.onclick = () => {
+          container.classList.toggle('flipped');
+        };
+
+        // Botón Seleccionar / Conjugar
+        const selectBtn = document.createElement('button');
+        selectBtn.className = 'select-btn';
+        selectBtn.textContent = 'Conjugar';
+        selectBtn.onclick = (e) => {
+          e.stopPropagation();
+          selectedVerb = v;
+          renderDesk();
+          updateWorkspace();
+        };
+
+        wrapper.appendChild(container);
+        wrapper.appendChild(selectBtn);
+        desk.appendChild(wrapper);
+      });
+    }
+
+    // Actualizar el área de conjugación (Izquierda)
+    function updateWorkspace() {
+      document.getElementById('selectedVerbTitle').textContent = selectedVerb.verbo;
+      document.getElementById('selectedVerbInfo').textContent = selectedVerb.info;
+      
+      const badge = document.getElementById('selectedVerbBadge');
+      if (selectedVerb.especial) {
+        badge.className = 'note-badge special';
+        badge.textContent = '⚠️ Casos Especiales del Grupo 2';
+      } else {
+        badge.className = 'note-badge';
+        badge.textContent = 'Raíz cambia en: Yo, Tú, Él/Ella, Ellos/as';
+      }
+
+      const grid = document.getElementById('conjugationGrid');
+      grid.innerHTML = '';
+
+      selectedVerb.conjugaciones.forEach((item, i) => {
+        const fullWord = item.raiz + item.terminacion.replace('-', '');
+
+        // Color de pieza: Amarillo si cambia la raíz, Rojo si es verbo especial con cambio, Verde si es la forma base sin cambio
+        let stemFill = "#facc15";
+        let stemStroke = "#eab308";
+
+        if (selectedVerb.especial && item.esCambio) {
+          stemFill = "#ef4444";
+          stemStroke = "#b91c1c";
+        } else if (!item.esCambio) {
+          stemFill = "#e2e8f0";
+          stemStroke = "#94a3b8";
+        }
+
+        const row = document.createElement('div');
+        row.className = 'row';
+
+        row.innerHTML = `
+          <div class="pronoun">${item.pronombre}</div>
+          <div class="puzzle-box" onclick="togglePiece(${i})">
+            <svg class="puzzle-svg" width="240" height="48" viewBox="0 0 240 48">
+              <!-- Pieza Raíz -->
+              <path d="M 5,4 L 110,4 
+                       C 110,13 123,13 123,4 
+                       L 132,4 
+                       A 4,4 0 0,1 136,8 
+                       L 136,17 
+                       C 146,17 146,30 136,30 
+                       L 136,40 
+                       A 4,4 0 0,1 132,44 
+                       L 5,44 
+                       A 4,4 0 0,1 1,40 
+                       L 1,8 
+                       A 4,4 0 0,1 5,4 Z" 
+                    fill="${stemFill}" stroke="${stemStroke}" stroke-width="2"/>
+              <text x="60" y="24" class="text-stem" fill="${(selectedVerb.especial && item.esCambio) ? '#ffffff' : '#1f2937'}">${item.raiz}-</text>
+
+              <!-- Pieza Terminación -->
+              <path d="M 132,4 L 230,4 
+                       A 4,4 0 0,1 234,8 
+                       L 234,40 
+                       A 4,4 0 0,1 230,44 
+                       L 132,44 
+                       A 4,4 0 0,1 128,40 
+                       L 128,30 
+                       C 138,30 138,17 128,17 
+                       L 128,8 
+                       A 4,4 0 0,1 132,4 Z" 
+                    fill="#22c55e" stroke="#15803d" stroke-width="2"/>
+              <text x="180" y="24" class="text-ending text-hidden" id="ending-${i}">${item.terminacion}</text>
+            </svg>
+          </div>
+          <button class="audio-btn" title="Escuchar pronunciación" onclick="speak('${item.pronombre} ${fullWord}')">🔊</button>
+        `;
+        grid.appendChild(row);
+      });
+    }
+
+    // Revelar u ocultar terminación
+    function togglePiece(index) {
+      const endingText = document.getElementById(`ending-${index}`);
+      if (endingText) endingText.classList.toggle('text-hidden');
+    }
+
+    // Sintetizador de voz
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Inicialización
+    renderDesk();
+    updateWorkspace();
+  </script>
+
+</body>
+</html>
