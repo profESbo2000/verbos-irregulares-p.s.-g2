@@ -48,7 +48,7 @@
       font-size: 1.05rem;
     }
 
-    /* ESTRUCTURA PRINCIPAL (CONJUGACIÓN A LA IZQUIERDA, MESA A LA DERECHA) */
+    /* ESTRUCTURA PRINCIPAL (MESA A LA IZQUIERDA, CONJUGACIÓN A LA DERECHA) */
     .main-layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -57,7 +57,131 @@
       margin: 0 auto;
     }
 
-    /* ÁREA DE TRABAJO (CONJUGADOR) */
+    /* MESA DE VERBOS (IZQUIERDA) */
+    .desk-area {
+      background-color: #a3b18a;
+      border: 4px solid #588157;
+      border-radius: 20px;
+      padding: 20px;
+      min-height: 550px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-content: flex-start;
+      justify-content: center;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    .card-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .card-container {
+      width: 110px;
+      height: 110px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+      border-radius: 12px;
+    }
+
+    .card-container.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-container.active .card-front,
+    .card-container.active .card-back {
+      border: 3px solid #ff5252;
+      box-shadow: 0 0 12px rgba(255, 82, 82, 0.8);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      user-select: none;
+    }
+
+    .card-front {
+      background-color: #ffffff;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 0.95rem;
+      border: 2px solid #cbd5e1;
+    }
+
+    /* ESTILO ESPECIAL PARA JUGAR Y OLER */
+    .card-container.is-special .card-front {
+      border: 2px solid #ef4444;
+      color: #b91c1c;
+      background-color: #fff5f5;
+    }
+
+    .card-container.is-special .card-front::after {
+      content: "★ Especial";
+      font-size: 0.65rem;
+      color: #ef4444;
+      margin-top: 2px;
+      font-weight: 700;
+    }
+
+    .card-back {
+      background-color: #f1f5f9;
+      color: var(--text-main);
+      transform: rotateY(180deg);
+      border: 2px solid #cbd5e1;
+    }
+
+    .card-back-icon {
+      font-size: 1.8rem;
+      margin-bottom: 2px;
+    }
+
+    .card-back-text {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+    }
+
+    .select-btn {
+      background-color: #ff793f;
+      color: #ffffff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .select-btn:hover {
+      background-color: #ff5252;
+    }
+
+    /* ÁREA DE TRABAJO (CONJUGADOR A LA DERECHA) */
     .workspace {
       background-color: var(--card-bg);
       border-radius: 20px;
@@ -182,130 +306,6 @@
       transform: scale(1.1);
     }
 
-    /* MESA DE VERBOS (DERECHA) */
-    .desk-area {
-      background-color: #a3b18a;
-      border: 4px solid #588157;
-      border-radius: 20px;
-      padding: 20px;
-      min-height: 550px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-content: flex-start;
-      justify-content: center;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
-    }
-
-    .card-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .card-container {
-      width: 110px;
-      height: 110px;
-      perspective: 1000px;
-      cursor: pointer;
-    }
-
-    .card-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      text-align: center;
-      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-      transform-style: preserve-3d;
-      border-radius: 12px;
-    }
-
-    .card-container.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
-
-    .card-container.active .card-front,
-    .card-container.active .card-back {
-      border: 3px solid #ff5252;
-      box-shadow: 0 0 12px rgba(255, 82, 82, 0.8);
-    }
-
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 6px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      user-select: none;
-    }
-
-    .card-front {
-      background-color: #ffffff;
-      color: var(--text-main);
-      font-weight: 800;
-      font-size: 0.95rem;
-      border: 2px solid #cbd5e1;
-    }
-
-    /* ESTILO ESPECIAL PARA JUGAR Y OLER */
-    .card-container.is-special .card-front {
-      border: 2px solid #ef4444;
-      color: #b91c1c;
-      background-color: #fff5f5;
-    }
-
-    .card-container.is-special .card-front::after {
-      content: "★ Especial";
-      font-size: 0.65rem;
-      color: #ef4444;
-      margin-top: 2px;
-      font-weight: 700;
-    }
-
-    .card-back {
-      background-color: #f1f5f9;
-      color: var(--text-main);
-      transform: rotateY(180deg);
-      border: 2px solid #cbd5e1;
-    }
-
-    .card-back-icon {
-      font-size: 1.8rem;
-      margin-bottom: 2px;
-    }
-
-    .card-back-text {
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #0f172a;
-      text-transform: uppercase;
-    }
-
-    .select-btn {
-      background-color: #ff793f;
-      color: #ffffff;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    }
-
-    .select-btn:hover {
-      background-color: #ff5252;
-    }
-
     @media (max-width: 900px) {
       .main-layout { grid-template-columns: 1fr; }
       .desk-area { min-height: auto; }
@@ -319,7 +319,10 @@
 
   <div class="main-layout">
     
-    <!-- CONJUGACIÓN (IZQUIERDA) -->
+    <!-- MESA DE VERBOS (IZQUIERDA) -->
+    <div class="desk-area" id="deskArea"></div>
+
+    <!-- CONJUGACIÓN (DERECHA) -->
     <div class="workspace">
       <div class="verb-header">
         <div class="selected-title" id="selectedVerbTitle">PODER</div>
@@ -329,9 +332,6 @@
 
       <div class="conjugation-grid" id="conjugationGrid"></div>
     </div>
-
-    <!-- MESA DE VERBOS (DERECHA) -->
-    <div class="desk-area" id="deskArea"></div>
 
   </div>
 
@@ -567,7 +567,7 @@
 
     let selectedVerb = verbosGrupo2[0];
 
-    // Renderizar las tarjetas en la mesa de la derecha
+    // Renderizar las tarjetas en la mesa de la izquierda
     function renderDesk() {
       const desk = document.getElementById('deskArea');
       desk.innerHTML = '';
@@ -615,7 +615,7 @@
       });
     }
 
-    // Actualizar el área de conjugación (Izquierda)
+    // Actualizar el área de conjugación (Derecha)
     function updateWorkspace() {
       document.getElementById('selectedVerbTitle').textContent = selectedVerb.verbo;
       document.getElementById('selectedVerbInfo').textContent = selectedVerb.info;
@@ -635,7 +635,7 @@
       selectedVerb.conjugaciones.forEach((item, i) => {
         const fullWord = item.raiz + item.terminacion.replace('-', '');
 
-        // Color de pieza: Amarillo si cambia la raíz, Rojo si es verbo especial con cambio, Verde si es la forma base sin cambio
+        // Color de pieza: Amarillo si cambia la raíz, Rojo si es verbo especial con cambio, Gris claro si no cambia
         let stemFill = "#facc15";
         let stemStroke = "#eab308";
 
